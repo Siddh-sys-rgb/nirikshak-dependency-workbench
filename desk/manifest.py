@@ -31,7 +31,7 @@ def parse_manifest(text):
         line = re.split(r"\s+#", line, maxsplit=1)[0].strip()
         match = PIN.fullmatch(line)
         reason = "Only one exact package==version pin per line is supported."
-        if match:
+        if match and re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?", match.group(1)):
             name, version = match.groups()
             try:
                 parsed = Version(version)
@@ -46,6 +46,8 @@ def parse_manifest(text):
                     if name in seen:
                         reason = ("Duplicate package pin." if seen[name] == version else
                                   "Conflicting versions for the same package.")
+                        if seen[name] != version:
+                            next(p for p in packages if p["name"] == name)["ambiguous"] = True
                     else:
                         packages.append({"name": name, "version": version, "line": number})
                         seen[name] = version
