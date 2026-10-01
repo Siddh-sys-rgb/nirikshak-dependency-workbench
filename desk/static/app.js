@@ -127,15 +127,26 @@ async function route() {
   }
 }
 
+function clearLiveConsent(resetMode=false) {
+  $('#live-consent').checked = false;
+  if (resetMode) $('#scan-mode').value = 'offline';
+  const live = $('#scan-mode').value === 'live';
+  $('#consent-row').hidden = !live;
+  $('#offline-help').hidden = live;
+}
+
 $$('[data-new]').forEach(button => button.addEventListener('click', () => {
   $('#scan-error').hidden = true;
+  clearLiveConsent(true);
   $('#scan-dialog').showModal();
 }));
 $('#close-dialog').addEventListener('click', () => { if (!state.busy) $('#scan-dialog').close(); });
 $('#scan-dialog').addEventListener('cancel', event => { if (state.busy) event.preventDefault(); });
-$('#use-baseline').addEventListener('click', () => { $('#manifest').value = baseline; });
-$('#use-update').addEventListener('click', () => { $('#manifest').value = update; });
+$('#use-baseline').addEventListener('click', () => { $('#manifest').value = baseline; clearLiveConsent(); });
+$('#use-update').addEventListener('click', () => { $('#manifest').value = update; clearLiveConsent(); });
+$('#manifest').addEventListener('input', () => clearLiveConsent());
 $('#manifest-file').addEventListener('change', async event => {
+  clearLiveConsent();
   const file = event.target.files[0];
   if (!file) return;
   if (!file.name.toLowerCase().endsWith('.txt') || file.size > 32768) {
@@ -156,10 +167,7 @@ $('#manifest-file').addEventListener('change', async event => {
   }
 });
 $('#scan-mode').addEventListener('change', () => {
-  const live = $('#scan-mode').value === 'live';
-  $('#consent-row').hidden = !live;
-  $('#offline-help').hidden = live;
-  $('#live-consent').checked = false;
+  clearLiveConsent();
 });
 $('#scan-form').addEventListener('submit', async event => {
   event.preventDefault();
