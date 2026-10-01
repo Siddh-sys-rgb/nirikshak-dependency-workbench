@@ -43,6 +43,7 @@ function renderReport(report) {
   state.selected = report.id;
   renderScanList();
   $('#report-name').textContent = report.name;
+  $('#export-link').hidden = false;
   $('#report-meta').innerHTML = `<span class="pill">${report.mode==='offline'?'Offline cache':'Live OSV lookup'}</span><span>Saved ${escape(date(report.created_at))}</span><span>Immutable snapshot</span>`;
   $('#export-link').href = `/api/scans/${encodeURIComponent(report.id)}/export`;
   const sum = report.summary;
@@ -82,6 +83,7 @@ async function showComparison() {
   }
   const expected = state.routeVersion;
   const before = $('#before').value, after = $('#after').value;
+  $('#comparison-output').innerHTML = '<p class="empty">Loading comparison evidence…</p>';
   const data = await api(`/api/compare?before=${encodeURIComponent(before)}&after=${encodeURIComponent(after)}`);
   if (expected !== state.routeVersion || before !== $('#before').value || after !== $('#after').value) return;
   const covered = data.coverage;
@@ -190,7 +192,10 @@ $('#scan-form').addEventListener('submit', async event => {
 });
 $('#compare-form').addEventListener('submit', async event => {
   event.preventDefault();
-  try { await showComparison(); } catch(error) { toast(error.message); }
+  try { await showComparison(); } catch(error) {
+    $('#comparison-output').innerHTML = '<p class="empty">Comparison unavailable. No change conclusion can be drawn.</p>';
+    toast(error.message);
+  }
 });
 window.addEventListener('hashchange', route);
 (async () => {

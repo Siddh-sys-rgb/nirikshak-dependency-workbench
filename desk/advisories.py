@@ -90,7 +90,8 @@ def summarise(records, package):
         if record.get("details") and not group["details"]:
             group["details"] = str(record["details"])[:8000]
         severity = str(record.get("database_specific", {}).get("severity", "UNKNOWN")).upper()
-        if severity in {"LOW", "MODERATE", "MEDIUM", "HIGH", "CRITICAL"}:
+        rank = {"UNKNOWN": 0, "LOW": 1, "MODERATE": 2, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
+        if rank.get(severity, 0) > rank[group["severity"]]:
             group["severity"] = severity
         group["modified"] = record.get("modified") or group["modified"]
         for reference in record.get("references", []):
