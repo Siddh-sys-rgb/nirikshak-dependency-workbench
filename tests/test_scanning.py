@@ -82,6 +82,16 @@ def test_failed_live_lookup_does_not_destroy_valid_cache(db):
     assert cached(db,'jinja2','3.1.4')==original
 
 
+def test_missing_retrieval_timestamp_is_partial_and_not_cached(db):
+    class MissingTimestamp:
+        def query(self,packages):
+            return [{'state':'complete','records':[],'retrieved_at':None,'reason':''} for p in packages]
+    report=scan(db,'new-package==1','Unknown freshness','live',MissingTimestamp())
+    assert report['packages'][0]['state']=='partial'
+    assert report['summary']['complete'] is False
+    assert cached(db,'new-package','1') is None
+
+
 def test_removed_dependency_is_not_declared_resolved(db):
     before=get_scan(db,'demo-baseline')
     after=scan(db,'requests==2.32.4','Removed template dependency')

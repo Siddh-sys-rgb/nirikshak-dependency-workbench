@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 
 from desk import create_app
+from desk.advisories import now
 
 
 def test_public_health_bootstrap_and_security_headers(client):
@@ -87,7 +88,7 @@ def test_concurrent_live_query_returns_busy_without_duplicate_network_calls(app)
         def query(self,packages):
             started.set()
             assert finish.wait(3)
-            return [{'state':'complete','records':[],'retrieved_at':None,'reason':''} for p in packages]
+            return [{'state':'complete','records':[],'retrieved_at':now(),'reason':''} for p in packages]
     app.config['OSV_CLIENT']=BlockingProvider()
     data={'text':'sample==1','mode':'live','live_consent':True}
     def submit():

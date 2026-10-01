@@ -56,6 +56,8 @@ def scan(db, text, name, mode="offline", client=None, scan_id=None):
         except (TypeError, AttributeError, KeyError, ValueError):
             entry.update(state="failed", reason="Advisory details did not match the supported schema.")
         entry.update(freshness(entry["retrieved_at"]))
+        if entry["freshness"] == "unknown" and entry["state"] == "complete":
+            entry.update(state="partial", reason="The evidence retrieval timestamp is missing or invalid.")
         if package.get("ambiguous") and entry["state"] == "complete":
             entry.update(state="partial", reason="The manifest has conflicting pins for this package; the selected version is not definitive.")
         if mode == "live" and entry["state"] == "complete":
