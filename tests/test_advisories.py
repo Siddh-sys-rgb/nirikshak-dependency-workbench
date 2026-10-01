@@ -61,6 +61,22 @@ def test_live_empty_result_is_verified_empty_not_failure():
     assert result[0]['records'] == []
 
 
+def test_empty_package_list_does_not_send_a_request():
+    def forbidden(*a, **k):
+        raise AssertionError('No request expected')
+    assert OSVClient(forbidden).query([]) == []
+
+
+def test_wrong_advisory_identity_is_partial():
+    def transport(path, payload=None, timeout=4):
+        if path.endswith('querybatch'):
+            return {'results':[{'vulns':[{'id':'GHSA-test'}]}]}
+        return {'id':'GHSA-different'}
+    result=OSVClient(transport).query(PACKAGES)[0]
+    assert result['state']=='partial'
+    assert result['records'][0]['id']=='GHSA-test'
+
+
 @pytest.mark.parametrize('response', [{}, {'results':[]}, {'results':[None]},
     {'results':[{'vulns':None}]}])
 def test_malformed_batch_marks_failed(response):

@@ -1,5 +1,7 @@
 import io
 import json
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -77,6 +79,52 @@ def test_cooldown_explicit_retry_error(client,token,app):
     data={'text':'somepkg==1','mode':'live','live_consent':True}
     assert client.post('/api/scans',json=data,headers=token).status_code==201
     assert client.post('/api/scans',json=data,headers=token).status_code==429
+
+
+def test_concurrent_live_query_returns_busy_without_duplicate_network_calls(app):
+    started, finish = threading.Event(), threading.Event()
+    class BlockingProvider:
+        def query(self,packages):
+            started.set()
+            assert finish.wait(3)
+            return [{'state':'complete','records':[],'retrieved_at':None,'reason':''} for p in packages]
+    app.config['OSV_CLIENT']=BlockingProvider()
+    data={'text':'sample==1','mode':'live','live_consent':True}
+    def submit():
+        client=app.test_client()
+        token=client.get('/api/bootstrap').json['csrf']
+        return client.post('/api/scans',json=data,headers={'X-CSRF-Token':token})
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first=executor.submit(submit)
+        try:
+            assert started.wait(2)
+            assert submit().status_code==429
+        finally:
+            finish.set()
+        assert first.result().status_code==201
+
+
+def test_scan_limit_is_explicit(client,token,app):
+    from desk.storage import connect, get_scan, save_scan
+    with connect(app.config['DATA_DIR']+'/workbench.db') as db:
+        report=get_scan(db,'demo-baseline')
+        for index in range(198):
+            report['id']=f'capacity-{index}'
+            save_scan(db,report)
+    response=client.post('/api/scans',json={'text':'sample==1'},headers=token)
+    assert response.status_code==422
+    assert '200' in response.json['error']
+
+
+def test_unexpected_provider_error_is_not_exposed_or_saved_as_clean(client,token,app):
+    class BrokenProvider:
+        def query(self,packages):
+            raise RuntimeError('private-provider-internals')
+    app.config['OSV_CLIENT']=BrokenProvider()
+    response=client.post('/api/scans',json={'text':'sample==1','mode':'live','live_consent':True},headers=token)
+    assert response.status_code==500
+    assert 'private-provider' not in response.json['error']
+    assert len(client.get('/api/scans').json['scans'])==2
 
 
 def test_upload_utf8_manifest_and_bom(client,token):
