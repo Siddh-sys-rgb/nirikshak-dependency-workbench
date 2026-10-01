@@ -22,7 +22,7 @@ def create_app(config=None):
     app = Flask(__name__, instance_path=str(ROOT / "instance"))
     app.config.update(DATA_DIR=str(ROOT / "instance"), MAX_CONTENT_LENGTH=65536,
         TRUSTED_HOSTS=["localhost", "127.0.0.1", "[::1]"],
-        SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Strict",
+        SESSION_COOKIE_NAME="nirikshak_session", SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Strict",
         SEED_DEMO=True, BUNDLED_CACHE=True, LIVE_COOLDOWN=5, OSV_CLIENT=OSVClient())
     if config:
         app.config.update(config)

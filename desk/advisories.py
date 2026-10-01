@@ -58,11 +58,25 @@ def identity(record):
     return (cves or ghsas or [record.get("id", "unknown")])[0]
 
 
+def validate_record(record):
+    if not isinstance(record, dict) or not isinstance(record.get("id"), str) or not ID_PATTERN.fullmatch(record["id"]):
+        raise ValueError("Invalid advisory identity.")
+    aliases = record.get("aliases", [])
+    if not isinstance(aliases, list) or any(not isinstance(a, str) for a in aliases):
+        raise ValueError("Invalid advisory aliases.")
+    if not isinstance(record.get("affected", []), list) or not isinstance(record.get("references", []), list):
+        raise ValueError("Invalid advisory evidence lists.")
+    if not isinstance(record.get("database_specific", {}), dict):
+        raise ValueError("Invalid advisory metadata.")
+    return record
+
+
 def summarise(records, package):
+    if not isinstance(records, list):
+        raise ValueError("Advisories must be a list.")
     groups = {}
     for record in records:
-        if not isinstance(record, dict) or not isinstance(record.get("id"), str):
-            continue
+        validate_record(record)
         if record.get("withdrawn"):
             continue
         key = identity(record)
@@ -119,7 +133,7 @@ class OSVClient:
             batch = result.get("results")
             if not isinstance(batch, list) or len(batch) != len(packages):
                 raise LookupFailure("OSV returned an unexpected batch size.")
-        except LookupFailure as exc:
+        except (LookupFailure, AttributeError, TypeError) as exc:
             return [{"state": "failed", "records": [], "retrieved_at": retrieved,
                      "reason": str(exc)} for _ in packages]
         outputs, details, count = [], {}, 0
@@ -131,7 +145,9 @@ class OSVClient:
             records, reasons = [], []
             if item.get("next_page_token"):
                 reasons.append("OSV pagination is present; only the first page is represented.")
-            for reference in item.get("vulns", []):
+            if len(item.get("vulns", [])) > 100:
+                reasons.append("More than 100 records matched; only the first 100 are represented.")
+            for reference in item.get("vulns", [])[:100]:
                 advisory_id = reference.get("id", "") if isinstance(reference, dict) else ""
                 if not isinstance(advisory_id, str) or not ID_PATTERN.fullmatch(advisory_id):
                     reasons.append("An advisory ID was invalid.")
@@ -147,8 +163,9 @@ class OSVClient:
                                                     timeout=min(4, remaining))
                             if record.get("id") != advisory_id:
                                 raise LookupFailure("Advisory identity did not match the query.")
+                            validate_record(record)
                             details[advisory_id] = record
-                        except LookupFailure:
+                        except (LookupFailure, ValueError, AttributeError, TypeError):
                             details[advisory_id] = None
                 if details[advisory_id] is None:
                     reasons.append("Some advisory details were unavailable or exceeded the scan budget.")

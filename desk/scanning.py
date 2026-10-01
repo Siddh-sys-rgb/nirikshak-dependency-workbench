@@ -39,6 +39,12 @@ def scan(db, text, name, mode="offline", client=None, scan_id=None):
             payload = record["response"]
             entry.update(state="complete", source=record["source"],
                          retrieved_at=record["retrieved_at"], reason="")
+            if not isinstance(payload, dict):
+                entry.update(state="failed", reason="Cached response has an invalid shape.")
+                report["packages"].append(entry)
+                continue
+            if payload.get("next_page_token"):
+                entry.update(state="partial", reason="Cached response contains only the first page.")
             records = payload.get("vulns", [])
         else:
             result = results[index]
