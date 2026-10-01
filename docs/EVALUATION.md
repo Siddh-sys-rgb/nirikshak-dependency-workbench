@@ -76,3 +76,31 @@ retrieval snapshot. It does not establish that a dependency or release is safe.
 
 Browser workflow and screenshot validation are recorded separately by the
 integrating agent after the local browser review.
+
+## Running-browser verification
+
+On 1 October 2026 the actual Flask UI was exercised in the in-app browser:
+
+- Created an offline report with one cached pin, an uncached fictional package
+  and an unsupported range. The UI showed the incomplete coverage warning
+  despite a zero finding count.
+- Compared the seeded snapshots and verified 4 new, 3 resolved and 1 unchanged
+  family, along with common-package coverage and changed versions.
+- Imported the real local `demo/update.txt` through the browser file chooser
+  and saved an offline report with two checked pins and five families.
+- Explicitly opted into a live `requests==2.32.4` lookup. The report showed
+  complete live evidence, its original retrieval time and one advisory family.
+- Downloaded JSON using the UI and parsed the downloaded file; its name, mode
+  and checked-package count matched the live report.
+- Verified that a fresh scan dialog starts offline. Editing package text after
+  checking live consent clears the checkbox; closing/reopening clears previous
+  consent and restores offline mode.
+- Inspected the 1280-pixel desktop and 390-pixel mobile comparison. Neither
+  layout had horizontal document overflow; saved-scan cards intentionally
+  scroll within their own mobile row. Final console warnings/errors were empty.
+- Verified independent localhost sessions across this app, Sutra and Repair Works.
+
+Original JPEG screenshots show the working live report, seeded comparison and
+mobile comparison. Extra saved scans and timestamps belong to the fictional
+local QA session. This manual inspection is not an exhaustive automated
+cross-browser suite. No remote CI or GitHub operation was performed.

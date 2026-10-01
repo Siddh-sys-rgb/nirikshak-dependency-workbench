@@ -31,6 +31,13 @@ comes from original, attributed OSV responses.
 
 ![Working snapshot comparison](docs/screenshots/comparison.jpg)
 
+<details>
+<summary>Mobile comparison</summary>
+
+![Responsive snapshot comparison](docs/screenshots/mobile.jpg)
+
+</details>
+
 ## Run locally
 
 Use **Python 3.10–3.12**. Development and tests were run with Python 3.12.14.
