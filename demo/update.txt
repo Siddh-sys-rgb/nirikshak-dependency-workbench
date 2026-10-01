@@ -1,0 +1,3 @@
+# Fictional change: update templates, accidentally downgrade HTTP client
+Jinja2==3.1.6
+requests==2.19.1
