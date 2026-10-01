@@ -142,7 +142,7 @@ python -m pytest --cov=desk --cov-report=term-missing -q
 python -m pip check
 ```
 
-**108 tests pass; 99% statement coverage.** Tests are deterministic and offline,
+**109 tests pass; 99% statement coverage.** Tests are deterministic and offline,
 using isolated temporary databases and mocked OSV responses. They cover parser
 attacks and limits, malformed and missing evidence, request protection, uploads,
 cache freshness, failed refreshes, immutable scans, consent, concurrent lookup

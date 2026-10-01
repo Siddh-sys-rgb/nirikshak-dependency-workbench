@@ -5,7 +5,7 @@
 On 1 October 2026, Python 3.12.14:
 
 ```text
-108 passed
+109 passed
 99% statement coverage across desk/
 pip check: No broken requirements found.
 node --check desk/static/app.js: passed

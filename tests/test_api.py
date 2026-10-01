@@ -24,6 +24,7 @@ def test_mutations_require_csrf_and_same_origin(client,token):
     data={'text':'Jinja2==3.1.4'}
     assert client.post('/api/scans',json=data).status_code==403
     assert client.post('/api/scans',json=data,headers={'X-CSRF-Token':'wrong'}).status_code==403
+    assert client.post('/api/scans',json=data,headers={'X-CSRF-Token':'é'}).status_code==403
     assert client.post('/api/scans',json=data,headers={**token,'Origin':'https://evil.example'}).status_code==403
     assert client.post('/api/scans',json=data,headers={**token,'Origin':'http://localhost'}).status_code==201
 

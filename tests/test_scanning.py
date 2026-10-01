@@ -5,7 +5,7 @@ import pytest
 
 from desk.advisories import now
 from desk.scanning import compare, freshness, scan
-from desk.storage import cached, connect, get_scan, save_cache
+from desk.storage import cached, connect, get_scan, save_cache, save_scan
 
 
 @pytest.fixture
@@ -123,6 +123,18 @@ def test_same_snapshot_has_only_unchanged_findings(db):
     result=compare(report,report)
     assert not result['new'] and not result['resolved']
     assert len(result['unchanged'])==4
+
+
+def test_database_enforces_scan_capacity_atomically(db):
+    from desk.manifest import InputError
+    report=deepcopy(get_scan(db,'demo-baseline'))
+    for index in range(198):
+        report['id']=f'capacity-{index}'
+        save_scan(db,report)
+    report['id']='over-capacity'
+    with pytest.raises(InputError):
+        save_scan(db,report)
+    assert db.execute('SELECT COUNT(*) FROM scans').fetchone()[0]==200
 
 
 @pytest.mark.parametrize('retrieved', [None,'invalid','2026-01-01T00:00:00'])

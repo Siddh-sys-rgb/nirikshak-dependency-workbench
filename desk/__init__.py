@@ -64,7 +64,7 @@ def create_app(config=None):
         if origin and origin != request.host_url.rstrip("/"):
             return jsonify(error="Cross-origin mutations are not accepted."), 403
         if not session.get("csrf") or not hmac.compare_digest(
-                request.headers.get("X-CSRF-Token", ""), session["csrf"]):
+                request.headers.get("X-CSRF-Token", "").encode("utf-8"), session["csrf"].encode("utf-8")):
             return jsonify(error="Reload the page to obtain a valid session token."), 403
 
     @app.after_request

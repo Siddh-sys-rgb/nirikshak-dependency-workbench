@@ -3,6 +3,8 @@ import json
 import sqlite3
 from pathlib import Path
 
+from .manifest import InputError
+
 
 def connect(path):
     db = sqlite3.connect(path, timeout=10)
@@ -51,8 +53,11 @@ def save_cache(db, name, version, retrieved, response, source="OSV live cache"):
 
 
 def save_scan(db, report):
-    db.execute("INSERT INTO scans VALUES (?,?,?,?)", (report["id"], report["name"],
-               report["created_at"], json.dumps(report)))
+    cursor = db.execute("""INSERT INTO scans
+        SELECT ?,?,?,? WHERE (SELECT COUNT(*) FROM scans) < 200""",
+        (report["id"], report["name"], report["created_at"], json.dumps(report)))
+    if cursor.rowcount != 1:
+        raise InputError("This local demo supports 200 immutable scans per data directory.")
 
 
 def get_scan(db, scan_id):
