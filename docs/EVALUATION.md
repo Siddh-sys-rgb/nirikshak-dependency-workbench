@@ -103,4 +103,4 @@ On 1 October 2026 the actual Flask UI was exercised in the in-app browser:
 Original JPEG screenshots show the working live report, seeded comparison and
 mobile comparison. Extra saved scans and timestamps belong to the fictional
 local QA session. This manual inspection is not an exhaustive automated
-cross-browser suite. No remote CI or GitHub operation was performed.
+cross-browser suite. These initial browser checks preceded publication. [GitHub Actions](https://github.com/Siddh-sys-rgb/nirikshak-dependency-workbench/actions/workflows/tests.yml) now records the Linux matrix results.

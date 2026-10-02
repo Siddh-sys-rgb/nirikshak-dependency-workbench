@@ -1,5 +1,7 @@
 # Nirikshak — Dependency Risk Workbench
 
+[![Tests](https://github.com/Siddh-sys-rgb/nirikshak-dependency-workbench/actions/workflows/tests.yml/badge.svg)](https://github.com/Siddh-sys-rgb/nirikshak-dependency-workbench/actions/workflows/tests.yml)
+
 A Flask security project for reviewing pinned Python dependencies with
 traceable OSV evidence. Save an immutable scan, inspect the advisories and
 their retrieval dates, then compare a dependency update without mistaking
@@ -42,6 +44,13 @@ comes from original, attributed OSV responses.
 
 Use **Python 3.10–3.12**. Development and tests were run with Python 3.12.14.
 No API key, Node installation, external database or GitHub login is required.
+
+Clone the standalone repository first (or download its ZIP):
+
+```bash
+git clone https://github.com/Siddh-sys-rgb/nirikshak-dependency-workbench.git dependency-risk-workbench
+cd dependency-risk-workbench
+```
 
 From this project's folder:
 
@@ -157,8 +166,8 @@ exclusion and correctly scoped comparisons.
 
 A separate real OSV client smoke check retrieved the expected original records
 for two public package/version pairs. Full validation details are in
-[docs/EVALUATION.md](docs/EVALUATION.md). The GitHub Actions workflow is prepared
-for Python 3.10 and 3.12; it has not run remotely during local development.
+[docs/EVALUATION.md](docs/EVALUATION.md). The GitHub Actions workflow checks
+Python 3.10 and 3.12 on Linux. See [current CI runs](https://github.com/Siddh-sys-rgb/nirikshak-dependency-workbench/actions/workflows/tests.yml).
 
 ## API
 
